@@ -31,12 +31,30 @@ class NotesView extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
             children: state.notes
-                .map((note) => NoteItem(
-                      note: note,
-                      onDeleteClick: () {
-                        print(note.id.toString() + "삭제");
-                        vm.onEvent(NotesEvent.deleteNote(note));
+                .map((note) => GestureDetector(
+                      onTap: () async {
+                        bool? isSaved = await Navigator.push(
+                            context, MaterialPageRoute(builder: (context) => AddEditNoteView(note: note)));
+
+                        if (isSaved == true) vm.onEvent(const NotesEvent.loadNotes());
                       },
+                      child: NoteItem(
+                        note: note,
+                        onDeleteClick: () {
+                          vm.onEvent(NotesEvent.deleteNote(note));
+
+                          final snackBar = SnackBar(
+                              content: const Text("노트가 삭제되었습니다."),
+                              action: SnackBarAction(
+                                label: '취소',
+                                onPressed: () {
+                                  vm.onEvent(const NotesEvent.restoreNote());
+                                },
+                              ));
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        },
+                      ),
                     ))
                 .toList()),
       ),

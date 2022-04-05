@@ -27,11 +27,19 @@ class _AddEditNoteViewState extends State<AddEditNoteView> {
   void initState() {
     super.initState();
 
+    if (widget.note != null) {
+      _titleController.text = widget.note!.title;
+      _contentController.text = widget.note!.content;
+    }
+
     Future.microtask(() {
       final vm = context.read<AddEditNoteViewModel>();
       _streamSubscription = vm.eventStream.listen((event) {
         event.when(saveNote: () {
           Navigator.pop(context, true);
+        }, showSnackBar: (String message) {
+          var snackBar = const SnackBar(content: Text("제목이나 내용 입력"));
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
         });
       });
     });
@@ -52,17 +60,12 @@ class _AddEditNoteViewState extends State<AddEditNoteView> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
-            var snackBar = const SnackBar(content: Text("제목이나 내용 입력"));
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          } else {
-            var event = AddEditNoteEvent.saveNote(
-              widget.note == null ? null : widget.note!.id,
-              _titleController.text,
-              _contentController.text,
-            );
-            vm.onEvent(event);
-          }
+          var event = AddEditNoteEvent.saveNote(
+            widget.note == null ? null : widget.note!.id,
+            _titleController.text,
+            _contentController.text,
+          );
+          vm.onEvent(event);
         },
         child: const Icon(Icons.save),
       ),

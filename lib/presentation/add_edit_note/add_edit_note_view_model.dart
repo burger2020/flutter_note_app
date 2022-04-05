@@ -29,13 +29,17 @@ class AddEditNoteViewModel with ChangeNotifier {
   }
 
   Future _saveNote(int? id, String title, String content) async {
-    final note =
-        Note(id: id, title: title, content: content, color: _color, timestamp: DateTime.now().millisecondsSinceEpoch);
-    if (id == null) {
-      repository.insertNote(note);
+    if (title.isEmpty || content.isEmpty) {
+      _eventController.add(const AddEditNoteUiEvent.showSnackBar("제목이나 내용 입력"));
     } else {
-      repository.updateNote(note);
+      final note =
+          Note(id: id, title: title, content: content, color: _color, timestamp: DateTime.now().millisecondsSinceEpoch);
+      if (id == null) {
+        repository.insertNote(note);
+      } else {
+        repository.updateNote(note);
+      }
+      _eventController.add(const AddEditNoteUiEvent.saveNote());
     }
-    _eventController.add(const AddEditNoteUiEvent.saveNote());
   }
 }
